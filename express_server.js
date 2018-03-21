@@ -53,10 +53,10 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.post("/urls", (req, res) => {
   console.log(req.body.longURL);
   const shortURL = generateRandomString();
-  const longURL = req.body.longURL
-  arr.push(shortURL + "," + longURL)
+  const longURL = req.body.longURL;
+  urlDatabase[shortURL] = longURL;
   res.send("Ok");
-  console.log(urlDatabase)
+  console.log(urlDatabase);
 });
 
 function generateRandomString() {
