@@ -9,8 +9,6 @@ var urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-let arr = Object.entries(urlDatabase);
-
 
 app.get("/", (req, res) => {
   res.end("Hello!");
@@ -25,6 +23,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  let arr = Object.entries(urlDatabase);
   let templateVars = { urls: arr };
   res.render("urls_index", templateVars);
 });
@@ -38,14 +37,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  let targetURL = arr.find(function(url) {
-    return url.id === req.params.id
-  })
-  let index = arr.indexOf(targetURL)
-
-  arr.splice(index, 1)
-  console.log(urlDatabase)
-
+  delete urlDatabase[req.params.id];
   res.redirect("/urls");
 });
 
@@ -77,7 +69,11 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-console.log(urlDatabase)
+app.post("/urls/:id", (req, res) => {
+  urlDatabase[req.params.id] = req.body.longURL;
+  res.redirect("/urls")
+})
+
 
 
 

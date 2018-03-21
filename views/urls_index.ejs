@@ -5,11 +5,13 @@
   </head>
   <body>
     <ul>
-      <% urls.forEach(function(elem) { %>
-        <li><%= elem  %></li>
-        <form method="POST" action="/urls/9sm5xK/delete">
+      <% urls.forEach(function(url) { %>
+        <li><%= url[0] + " ---> " + url[1]  %>
+        <a href="/urls/<%= url[0] %>">Edit</a>
+        <form method="POST" action="/urls/<%= url[0] %>/delete">
           <button type="submit">Delete</button>
         </form>
+      </li>
     <% }); %>
     <a href>Shortening a link</a>
     <ul>
