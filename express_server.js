@@ -9,6 +9,9 @@ var urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+let arr = Object.entries(urlDatabase);
+
+
 app.get("/", (req, res) => {
   res.end("Hello!");
 });
@@ -22,7 +25,6 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let arr = Object.entries(urlDatabase);
   let templateVars = { urls: arr };
   res.render("urls_index", templateVars);
 });
@@ -33,6 +35,18 @@ app.listen(PORT, () => {
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+  let targetURL = arr.find(function(url) {
+    return url.id === req.params.id
+  })
+  let index = arr.indexOf(targetURL)
+
+  arr.splice(index, 1)
+  console.log(urlDatabase)
+
+  res.redirect("/urls");
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -48,7 +62,7 @@ app.post("/urls", (req, res) => {
   console.log(req.body.longURL);
   const shortURL = generateRandomString();
   const longURL = req.body.longURL
-  urlDatabase[shortURL] = longURL;
+  arr.push(shortURL + "," + longURL)
   res.send("Ok");
   console.log(urlDatabase)
 });
@@ -62,6 +76,8 @@ app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
+
+console.log(urlDatabase)
 
 
 
