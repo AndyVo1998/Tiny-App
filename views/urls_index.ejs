@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <% include ./partials/_header.ejs %>
+    <title>TinyApp</title>
   </head>
   <body>
+    <header>
+      <% include ./partials/_header %>
+    </header>
     <ul>
       <% urls.forEach(function(url) { %>
         <li><%= url[0] + " ---> " + url[1]  %>
