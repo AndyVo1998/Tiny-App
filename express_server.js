@@ -39,8 +39,9 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let arr = Object.entries(urlDatabase);
-  let templateVars = { urls: arr, user_id: req.cookies["user_id"] };
+  let templateVars = { urls: arr, user_id: req.cookies["user_id"], users: users};
   res.render("urls_index", templateVars);
+  console.log(users)
 });
 
 app.listen(PORT, () => {
