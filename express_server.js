@@ -2,6 +2,7 @@ var express = require("express");
 var app = express();
 var PORT = process.env.PORT || 8080; // default port 8080
 var cookieParser = require("cookie-parser")
+const bcrypt = require("bcrypt");
 
 app.use(cookieParser())
 app.set("view engine", "ejs");
@@ -20,8 +21,8 @@ const users = {
 }
 
 var urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {longURL: "http://www.lighthouselabs.ca"},
+  "9sm5xK": {longURL: "http://www.google.com"}
 };
 
 
@@ -39,9 +40,8 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let arr = Object.entries(urlDatabase);
-  let templateVars = { urls: arr, user_id: req.cookies["user_id"], users: users };
+  let templateVars = { urls: arr, users: users, urlDatabase: urlDatabase, user_id: req.cookies["user_id"] };
   res.render("urls_index", templateVars);
-  console.log(users)
 });
 
 app.listen(PORT, () => {
@@ -59,18 +59,16 @@ app.get("/urls/new", (req, res) => {
 
 //DELETE URL
 app.post("/urls/:id/delete", (req, res) => {
-  if (urlDatabase["shortURL"] === req.cookies["user_id"]) {
-    console.log(urlDatabase[url][0] + "OVER HERE")
+  if (urlDatabase[key].userID === req.cookies["user_id"]) {
     delete urlDatabase[req.params.id];
     res.redirect("/urls");
   } else {
-    console.log("OVER HERE" + urlDatabase[] + "OVER HERE")
     res.status(403).send("Forbidden")
   }
 });
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], user_id: req.cookies["user_id"], users: users };
+  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id].longURL, user_id: req.cookies["user_id"], users: users };
   res.render("urls_show", templateVars);
 });
 
@@ -86,8 +84,8 @@ app.post("/urls", (req, res) => {
     userID: req.cookies["user_id"]
   }
   if (longURL) {
-    urlDatabase[shortURL] = urlObj.longURL;
-    console.log(urlDatabase[shortURL] + "HELLO")
+    urlDatabase[shortURL] = urlObj;
+    console.log(urlDatabase);
     res.redirect("/urls");
   } else {
     res.status(403).send("No Link entered")
@@ -100,13 +98,17 @@ function generateRandomString() {
 }
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[key].longURL;
   res.redirect(longURL);
 });
 
 app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.longURL;
-  res.redirect("/urls");
+  if (urlDatabase[key].userID === req.cookies["user_id"]) {
+    urlDatabase[req.params.id].longURL = req.body.longURL;
+    res.redirect("/urls");
+  } else {
+    res.status(403).send("Forbidden")
+  }
 })
 
 app.post("/login", (req, res) => {
@@ -117,7 +119,7 @@ app.post("/login", (req, res) => {
     let foundEmail = Object.values(users).find(user => user.email === email);
     if (!foundEmail) {
       res.status(403).send("Email not registered...")
-    } else if (password !== foundEmail.password) {
+    } else if (bcrypt.compareSync(password, hashedPassword)) {
       res.status(403).send("Invalid Password");
     } else {
       res.cookie("user_id", foundEmail.id);
@@ -139,7 +141,7 @@ app.get("/register", (req,res) => {
 app.post("/register", (req, res) => {
   let rand = Math.random().toString(36).substring(2, 8);
   let { email, password } = req.body;
-
+  const hashedPassword = bcrypt.hashSync(password, 10);
   if (!req.body.email || !req.body.password) {
     res.status(400).send("Email and Password fields required...")
   } else {
@@ -149,13 +151,13 @@ app.post("/register", (req, res) => {
       users[rand] = {
         id: rand,
         email: req.body.email,
-        password: req.body.password,
+        password: hashedPassword
       }
+      bcrypt.hashSync(users[rand].password, 10);
       res.cookie("user_id", rand)
       res.redirect("/urls")
       console.log(users)
     } else {
-      console.log(foundEmail)
       res.status(400).send("Email already registered!")
     }
   }
