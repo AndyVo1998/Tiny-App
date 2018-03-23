@@ -6,6 +6,19 @@ var cookieParser = require("cookie-parser")
 app.use(cookieParser())
 app.set("view engine", "ejs");
 
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+}
+
 var urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -26,7 +39,7 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let arr = Object.entries(urlDatabase);
-  let templateVars = { urls: arr, username: req.cookies["username"] };
+  let templateVars = { urls: arr, user_id: req.cookies["user_id"] };
   res.render("urls_index", templateVars);
 });
 
@@ -35,7 +48,7 @@ app.listen(PORT, () => {
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { username: req.cookies["username"] };
+  let templateVars = { user_id: req.cookies["user_id"] };
   res.render("urls_new", templateVars);
 });
 
@@ -45,7 +58,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
+  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], user_id: req.cookies["user_id"] };
   res.render("urls_show", templateVars);
 });
 
@@ -78,15 +91,59 @@ app.post("/urls/:id", (req, res) => {
 })
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username)
-  res.redirect("/urls")
-  console.log(req.body.username)
+  let { email, password } = req.body;
+  if (!email || !password) {
+    res.status(403).send("Enter required fields...");
+  } else {
+    let foundEmail = Object.values(users).find(user => user.email === email);
+    if (!foundEmail) {
+      res.status(403).send("Email not registered...")
+    } else if (password !== foundEmail.password) {
+      res.status(403).send("Invalid Password");
+    } else {
+      res.cookie("user_id", foundEmail.id);
+      res.redirect("/urls");
+    }
+  }
 })
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username", req.body.username)
+  res.clearCookie("user_id", req.body.user_id)
   res.redirect("/urls")
 })
+
+app.get("/register", (req,res) => {
+  let templateVars = { user_id: req.cookies["user_id"] };
+  res.render("urls_register", templateVars)
+})
+
+app.post("/register", (req, res) => {
+  let rand = Math.random().toString(36).substring(2, 8);
+  let { email, password } = req.body;
+
+  if (!req.body.email || !req.body.password) {
+    res.status(400).send("Email and Password fields required...")
+  } else {
+    let foundEmail = Object.values(users).find(user => user.email === email);
+    if (!foundEmail) {
+      users[rand] = users.id;
+      users[rand] = { id: rand, email: req.body.email, password: req.body.password}
+      res.cookie("user_id", rand)
+      res.redirect("/urls")
+      console.log(users)
+    } else {
+      console.log(foundEmail)
+      res.status(400).send("Email already registered!")
+    }
+  }
+})
+
+app.get("/login", (req, res) => {
+  res.render("urls_login")
+})
+
+
+
 
 
 
