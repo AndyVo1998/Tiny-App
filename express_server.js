@@ -68,12 +68,14 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 
 app.post("/urls", (req, res) => {
-  console.log(req.body.longURL);
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
-  urlDatabase[shortURL] = longURL;
-  res.redirect("/urls");
-  console.log(urlDatabase);
+  if (!longURL) {
+    urlDatabase[shortURL] = longURL;
+    res.redirect("/urls");
+  } else {
+    res.status(403).send("No Link entered")
+  }
 });
 
 function generateRandomString() {
