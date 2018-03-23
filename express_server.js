@@ -57,9 +57,16 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
+//DELETE URL
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
-  res.redirect("/urls");
+  if (urlDatabase["shortURL"] === req.cookies["user_id"]) {
+    console.log(urlDatabase[url][0] + "OVER HERE")
+    delete urlDatabase[req.params.id];
+    res.redirect("/urls");
+  } else {
+    console.log("OVER HERE" + urlDatabase[] + "OVER HERE")
+    res.status(403).send("Forbidden")
+  }
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -70,12 +77,17 @@ app.get("/urls/:id", (req, res) => {
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
-
+//MAKES NEW SHORT URL
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
+  let urlObj = {
+    longURL: longURL,
+    userID: req.cookies["user_id"]
+  }
   if (longURL) {
-    urlDatabase[shortURL] = longURL;
+    urlDatabase[shortURL] = urlObj.longURL;
+    console.log(urlDatabase[shortURL] + "HELLO")
     res.redirect("/urls");
   } else {
     res.status(403).send("No Link entered")
@@ -134,7 +146,11 @@ app.post("/register", (req, res) => {
     let foundEmail = Object.values(users).find(user => user.email === email);
     if (!foundEmail) {
       users[rand] = users.id;
-      users[rand] = { id: rand, email: req.body.email, password: req.body.password}
+      users[rand] = {
+        id: rand,
+        email: req.body.email,
+        password: req.body.password,
+      }
       res.cookie("user_id", rand)
       res.redirect("/urls")
       console.log(users)
