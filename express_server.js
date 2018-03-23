@@ -39,7 +39,7 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let arr = Object.entries(urlDatabase);
-  let templateVars = { urls: arr, user_id: req.cookies["user_id"], users: users};
+  let templateVars = { urls: arr, user_id: req.cookies["user_id"], users: users };
   res.render("urls_index", templateVars);
   console.log(users)
 });
@@ -49,8 +49,12 @@ app.listen(PORT, () => {
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { user_id: req.cookies["user_id"] };
-  res.render("urls_new", templateVars);
+  if (req.cookies["user_id"]) {
+    let templateVars = { user_id: req.cookies["user_id"], users: users };
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/urls")
+  }
 });
 
 app.post("/urls/:id/delete", (req, res) => {
@@ -59,7 +63,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], user_id: req.cookies["user_id"] };
+  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], user_id: req.cookies["user_id"], users: users };
   res.render("urls_show", templateVars);
 });
 
@@ -70,7 +74,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
-  if (!longURL) {
+  if (longURL) {
     urlDatabase[shortURL] = longURL;
     res.redirect("/urls");
   } else {
@@ -116,7 +120,7 @@ app.post("/logout", (req, res) => {
 })
 
 app.get("/register", (req,res) => {
-  let templateVars = { user_id: req.cookies["user_id"] };
+  let templateVars = { user_id: req.cookies["user_id"], users: users };
   res.render("urls_register", templateVars)
 })
 
