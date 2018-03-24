@@ -1,16 +1,12 @@
 <title>TinyApp</title>
-
 <% if (!user_id) { %>
   <form method="GET" action="/login">
   <button type="submit" >Login</button>
 </form>
-
 <form method="GET" action="/register">
   <button type="submit" >Register</button>
 </form>
-
 <% } else { %>
-
 <form method="POST" action="/logout">
   <%= users[user_id].email %>
   <button type="submit" >Logout</button>
