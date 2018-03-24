@@ -85,7 +85,6 @@ app.post("/urls", (req, res) => {
   }
   if (longURL) {
     urlDatabase[shortURL] = urlObj;
-    console.log(urlDatabase);
     res.redirect("/urls");
   } else {
     res.status(403).send("No Link entered")
@@ -117,10 +116,8 @@ app.post("/login", (req, res) => {
     res.status(403).send("Enter required fields...");
   } else {
     let foundEmail = Object.values(users).find(user => user.email === email);
-    if (!foundEmail) {
-      res.status(403).send("Email not registered...")
-    } else if (bcrypt.compareSync(password, hashedPassword)) {
-      res.status(403).send("Invalid Password");
+    if (!foundEmail || !bcrypt.compareSync(password, foundEmail.password)) {
+      res.status(403).send("Email or password invalid...")
     } else {
       res.cookie("user_id", foundEmail.id);
       res.redirect("/urls");
@@ -153,7 +150,6 @@ app.post("/register", (req, res) => {
         email: req.body.email,
         password: hashedPassword
       }
-      bcrypt.hashSync(users[rand].password, 10);
       res.cookie("user_id", rand)
       res.redirect("/urls")
       console.log(users)
