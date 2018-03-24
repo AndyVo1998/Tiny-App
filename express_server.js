@@ -32,7 +32,11 @@ var urlDatabase = {
 
 
 app.get("/", (req, res) => {
-  res.end("Hello!");
+  if (!req.session.user_id) {
+    res.redirect("/login")
+  } else {
+    res.redirect("/urls")
+  }
 });
 
 app.get("/urls.json", (req, res) => {
@@ -58,7 +62,7 @@ app.get("/urls/new", (req, res) => {
     let templateVars = { user_id: req.session["user_id"], users: users };
     res.render("urls_new", templateVars);
   } else {
-    res.redirect("/urls")
+    res.status(403).send("Forbidden")
   }
 });
 
