@@ -40,7 +40,11 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   let arr = Object.entries(urlDatabase);
   let templateVars = { urls: arr, users: users, urlDatabase: urlDatabase, user_id: req.session.user_id };
-  res.render("urls_index", templateVars);
+  if (req.session.user_id) {
+    res.render("urls_index", templateVars);
+  } else {
+    res.status(403).send("403 Please log in to continue.")
+  }
 });
 
 app.listen(PORT, () => {
@@ -135,7 +139,7 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   req.session = null;
   //clears cookie session
-  res.redirect("/urls")
+  res.redirect("/login")
 })
 
 app.get("/register", (req,res) => {
@@ -160,7 +164,7 @@ app.post("/register", (req, res) => {
       }
       //assigns a random 6 character string as the users ID
       req.session[rand] = "user_id"
-      res.redirect("/urls")
+      res.redirect("/login")
     } else {
       res.status(400).send("Email already registered!")
     }
