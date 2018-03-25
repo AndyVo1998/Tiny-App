@@ -139,7 +139,7 @@ app.post("/logout", (req, res) => {
 })
 
 app.get("/register", (req,res) => {
-  let templateVars = { user_id: req.session.user_id, users: users };
+  let templateVars = { users: users };
   res.render("urls_register", templateVars)
 })
 
