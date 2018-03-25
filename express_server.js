@@ -73,8 +73,12 @@ app.post("/urls/:id/delete", (req, res) => {
 
 //Edit URL page
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id].longURL, user_id: req.session.user_id, users: users };
-  res.render("urls_show", templateVars);
+  if (urlDatabase[key].userID === req.session.user_id) {
+    let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id].longURL, user_id: req.session.user_id, users: users };
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(403).send("Forbidden")
+  }
 });
 
 const bodyParser = require("body-parser");
